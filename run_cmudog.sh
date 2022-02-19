@@ -1,0 +1,15 @@
+python3 run_cmudog.py \
+  --seed 0 \
+  --batch_size 32 \
+  --emb_size 400 \
+  --learning_rate 1e-4 \
+  --weight_decay 1e-5 \
+  --epochs 2 \
+  --gpuno 0,1,2,3 \
+  --doc_len 40 \
+  --seq_len 40 \
+  --max_turn_num 4 \
+  --max_doc_num 20 \
+  --focusing_sample 723200 \
+  --valid_every 100000 \
+  --test_every 100000

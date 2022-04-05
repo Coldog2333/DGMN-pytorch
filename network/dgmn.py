@@ -3,14 +3,10 @@ import argparse
 import torch
 import torch.nn as nn
 import torch.nn.init as init
-from transformers import AutoModel
 
-from retrieval_based.data_provider.utils import load_word_embedding
-from retrieval_based.network import *
-from retrieval_based.network.attention import *
-from retrieval_based.network.layout import PretrainedLayoutEmbedding
-from retrieval_based.network.skim_attention import *
-from retrieval_based.network.basic import WordEmbeddingLayer
+from data_provider.utils import load_word_embedding
+from network.attention import AttentionBlock, NNSubmulti, HierarchicalNNSubmulti
+from network.basic import WordEmbeddingLayer
 from config_file import *
 
 
@@ -23,6 +19,13 @@ class DGMNConv3DLayer(nn.Module):
         self.conv2 = nn.Conv3d(in_channels=32, out_channels=16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1))
         self.pool2 = nn.MaxPool3d(kernel_size=(3, 3, 3), stride=(3, 3, 3), padding=(1, 0, 0))
         self.flatten = nn.Flatten()
+        self.init_weight()
+
+    def init_weight(self):
+        init.xavier_uniform_(self.conv1.weight)
+        init.constant_(self.conv1.bias, 0.)
+        init.xavier_uniform_(self.conv2.weight)
+        init.constant_(self.conv2.bias, 0.)
 
     def forward(self, cube):
         outputs = self.pool1(torch.relu(self.conv1(cube)))
@@ -55,8 +58,7 @@ class DGMN(nn.Module):
         dim_dar = 16 * ((((args.max_doc_num + 2) // 3) + 2) // 3) * ((args.seq_len // 3) // 3) * ((args.emb_size // 3) // 3)
         dim_qr = 16 * ((((args.max_turn_num + 2) // 3) + 2) // 3) * ((args.seq_len // 3) // 3) * ((args.emb_size // 3) // 3)
         dim_car = dim_qr
-        print(dim_dar, dim_qr, dim_car)
-        self.classifier = nn.Linear(in_features=dim_qr + dim_car + dim_dar, out_features=1)
+        self.classifier = nn.Linear(in_features=dim_qr + dim_car + dim_dar, out_features=2)
 
         self.debug_data = {'context': torch.randint(low=0, high=100, size=(16, 10, self.args.seq_len)),
                            'response': torch.randint(low=0, high=100, size=(16, self.args.seq_len)),
@@ -65,23 +67,22 @@ class DGMN(nn.Module):
                            'n_turn': torch.randint(low=1, high=self.args.max_turn_num, size=(16, 1))}
 
     def forward(self, inputs):
-        u, r, d, dl = inputs['context'], inputs['response'], inputs['document'], inputs['layout']
+        u, r, d = inputs['context'], inputs['response'], inputs['document']
 
         batch_size, max_turn, max_u_words = u.shape
         _, max_r_words = r.shape
         _, max_sentence, max_d_words = d.shape
         # max_sentence = 1
 
-        self.context_mask = torch.ones(batch_size, max_turn, max_u_words).to(DEVICE)
-        self.document_mask = torch.ones(batch_size, max_sentence, max_d_words).to(DEVICE)
-        self.response_mask = torch.ones(batch_size, max_r_words).to(DEVICE)
+        self.context_mask = torch.ones(batch_size, max_turn, max_u_words).to(self.args.device)
+        self.document_mask = torch.ones(batch_size, max_sentence, max_d_words).to(self.args.device)
+        self.response_mask = torch.ones(batch_size, max_r_words).to(self.args.device)
         self.parall_document_mask = self.document_mask.view(-1, max_d_words)
         self.parall_context_mask = self.context_mask.view(-1, max_u_words)
 
         context_embeddings = self.embeddings(u.view(-1, max_u_words)).view(batch_size, max_turn, max_u_words, -1)
         response_embeddings = self.embeddings(r.view(-1, max_r_words)).view(batch_size, max_r_words, -1)
-        document_embeddings = self.embeddings(d.view(-1, max_d_words))
-        document_embeddings = document_embeddings.view(batch_size, max_sentence, max_d_words, -1)
+        document_embeddings = self.embeddings(d.view(-1, max_d_words)).view(batch_size, max_sentence, max_d_words, -1)
 
         response_rep = response_embeddings
         parall_context_rep = context_embeddings.view(-1, max_u_words, self.args.emb_size)
@@ -175,8 +176,6 @@ class DGMN(nn.Module):
 
         final_vec = torch.cat([qr_vec, car_vec, dar_vec], dim=-1)
         logits = self.classifier(final_vec)
-        logits = torch.sigmoid(logits)
-        logits = logits.squeeze()
         return logits
 
 
@@ -190,9 +189,6 @@ if __name__ == '__main__':
     parser.add_argument("--seq_len", default=40, type=int, help='Maximum #tokens/turn')
     parser.add_argument("--max_turn_num", default=4, type=int, help='Maximum #turn')
     parser.add_argument("--max_doc_num", default=20, type=int, help='Maximum #turn')
-    parser.add_argument("--focusing_sample", default=0, type=int, help='Keep training n samples without testing.')
-    parser.add_argument("--valid_every", default=100000, type=int)
-    parser.add_argument("--test_every", default=100000, type=int)
     args = parser.parse_args()
 
     net = DGMN(args)

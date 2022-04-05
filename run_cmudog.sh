@@ -1,15 +1,29 @@
+gpuno="2"
+export CUDA_VISIBLE_DEVICES=${gpuno}
+export TOKENIZERS_PARALLELISM=true
+
+task="cmudog"
+save_path="${task}_GPU${gpuno}.pkl"
+
+## w2v: DGMN
 python3 run_cmudog.py \
-  --seed 0 \
-  --batch_size 32 \
-  --emb_size 400 \
-  --learning_rate 1e-4 \
-  --weight_decay 1e-5 \
-  --epochs 2 \
-  --gpuno 0,1,2,3 \
+  --is_training \
+  --seed 1234 \
+  --task ${task} \
+  --hidden_size 300 \
+  --emb_size 300 \
+  --model "dgmn" \
   --doc_len 40 \
   --seq_len 40 \
   --max_turn_num 4 \
   --max_doc_num 20 \
-  --focusing_sample 723200 \
-  --valid_every 100000 \
-  --test_every 100000
+  --percent 100 \
+  --batch_size 32 \
+  --learning_rate 1e-4 \
+  --weight_decay 0. \
+  --epochs 5 \
+  --valid_focusing_sample 0 \
+  --test_focusing_sample 723180 \
+  --valid_every 360000 \
+  --test_every 360000 \
+  --save_path ${save_path}

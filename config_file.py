@@ -16,5 +16,3 @@ personachat_train_dial_path = personachat_root_dir + '/' + 'processed_train_self
 personachat_test_dial_path = personachat_root_dir + '/' + 'processed_test_self_original_fullSection.txt'
 personachat_valid_dial_path = personachat_root_dir + '/' + 'processed_valid_self_original_fullSection.txt'
 personachat_glove_path = model_root_dir + '/' + 'personachat' + '/' + 'glove_42B_300d_vec_plus_word2vec_100.txt'
-
-DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'

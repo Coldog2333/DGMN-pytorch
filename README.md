@@ -1,7 +1,8 @@
 # DGMN-pytorch
 
-An unofficial repository of the paper 'A Document-grounded Matching Network for Response Selection in Retrieval-based Chatbots', which is implemented in PyTorch.
+An unofficial repository of the paper '**A Document-grounded Matching Network for Response Selection in Retrieval-based Chatbots**' [[paper]](https://www.ijcai.org/proceedings/2019/0756.pdf), which is implemented in PyTorch.
 
+The codes have been tested on CMUDoG dataset with 1×V100 GPU, training for 2h.
 ## Dependencies
 
 + Python 3.7
@@ -45,9 +46,9 @@ An unofficial repository of the paper 'A Document-grounded Matching Network for 
     </tr>
     <tr>
         <td>DGMN (Reproduced)</td>
-        <td>71.2</td>
-        <td>85.1</td>
-        <td>96.5</td>
+        <td>71.6</td>
+        <td>83.4</td>
+        <td>94.7</td>
         <td>-</td>
         <td>-</td>
         <td>-</td>
@@ -77,6 +78,12 @@ You can download the datasets and their corresponding embedding tables used in t
 Unzip the datasets to the folder of `dataset` and run the preprocessing codes provided in [JasonForjoy/FIRE](https://github.com/JasonForJoy/FIRE).
 
 Then, you will obtain the preprocessing files in `dataset/personachat_preprocessed` and `dataset/cmudog_preprocessed`.
+
+Also, we preprocessed the data in advanced, you can also simply run this command to download the preprocessed data:
+
+```shell
+sh download_dataset.sh
+```
 
 ## Train
 Temporarily we only test on CMUDoG. Here is an example to train DGMN in CMUDoG dataset.

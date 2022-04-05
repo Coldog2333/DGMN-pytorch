@@ -33,7 +33,9 @@ def load_word_embedding(embedding_filename):
     n_vocab = int(os.popen('wc -l %s' % embedding_filename).read().strip().split(' ')[0])
     n_dim = len(os.popen('head -1 %s' % embedding_filename).read().strip().split(' ')) - 1
 
-    word_embeddings = [np.zeros(shape=n_dim), np.zeros(shape=n_dim)]
+    limit = np.sqrt(6. / (1 + n_dim))
+    word_embeddings = [np.zeros(shape=n_dim),
+                       np.random.uniform(low=-limit, high=limit, size=n_dim)]   # Xavier_initializer
     word2id, id2word = {'<pad>': 0, '<unk>': 1}, {0: '<pad>', 1: '<unk>'}
     with open(embedding_filename) as f:
         for line in f:
@@ -44,6 +46,5 @@ def load_word_embedding(embedding_filename):
             id2word[len(id2word)] = word
 
     word_embeddings = np.array(word_embeddings)
-    word_embeddings[1:] = np.mean(word_embeddings, axis=0)     # unk
 
     return word_embeddings, word2id, id2word

@@ -50,6 +50,7 @@ class CMUDoGDataset(Dataset):
                     self.sparse_labels.append(label)
                     self.document_lists.append(document_list)
                     self.n_turns.append(len(context))
+                    self.n_documents.append(len(document_list))
 
             self.context_lens, self.document_lens, self.candidate_list_lens = None, None, None
             self.context_lens, self.document_lens, self.candidate_list_lens = self.w2v_preprocessing()

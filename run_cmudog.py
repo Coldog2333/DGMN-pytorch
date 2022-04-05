@@ -196,17 +196,11 @@ if __name__ == '__main__':
     if args.is_training:
         # train_model()
         logger.info('=' * 25 + ' dump files ' + '=' * 25)
-        recording_file_list = ['retrieval_based/run.py', 'config_file.py', 'retrieval_based/pipeline.py'] + \
-                              ['retrieval_based/network/%s.py' % f for f in ['__init__',
-                                                                             'attention',
-                                                                             'basic',
-                                                                             'csn',
-                                                                             'dam',
-                                                                             'dgmn',
-                                                                             'layout',
-                                                                             'network',
-                                                                             'skim_attention',
-                                                                             'smn']]
+        recording_file_list = ['run_cmudog.py', 'config_file.py', 'pipeline.py'] + \
+                              ['network/%s.py' % f for f in ['__init__',
+                                                             'attention',
+                                                             'basic',
+                                                             'dgmn',]]
         for filename in recording_file_list:
             logger.info('-' * 25 + filename + '-' * 25)
             with open(os.path.join(dgds_code_root_dir, filename)) as f:

@@ -132,14 +132,11 @@ class CMUDoGDataset(Dataset):
         samples = []
         for i in range(len(self.contexts)):
         # for context, candidate_list, document_list, sparse_label, n_turn, n_document, context_len, document_len, candidate_list_len in zip(self.contexts, self.candidate_lists, self.document_lists, self.context_chars, self.candidate_chars, self.document_chars, self.sparse_labels, self.n_turns, self.n_documents, self.context_lens, self.document_lens, self.candidate_list_lens):
-            for index, (candidate, candidate_chars, response_len) in enumerate(zip(self.candidate_lists[i], self.candidate_chars[i], self.candidate_list_lens[i])):
+            for index, (candidate, response_len) in enumerate(zip(self.candidate_lists[i], self.candidate_list_lens[i])):
                 label = 1 if index == self.sparse_labels[i] else 0
                 sample = {'context': self.contexts[i],
                           'document': self.document_lists[i],
                           'response': candidate,
-                          'context_char': self.context_chars[i],
-                          'document_char': self.document_chars[i],
-                          'response_char': candidate_chars,
                           'context_len': self.context_lens[i],
                           'document_len': self.document_lens[i],
                           'response_len': response_len,
@@ -156,9 +153,6 @@ class CMUDoGDataset(Dataset):
         context = torch.tensor(sample['context'], dtype=torch.long)
         response = torch.tensor(sample['response'], dtype=torch.long)
         document = torch.tensor(sample['document'], dtype=torch.long)
-        context_char = torch.tensor(sample['context_char'], dtype=torch.long)
-        response_char = torch.tensor(sample['response_char'], dtype=torch.long)
-        document_char = torch.tensor(sample['document_char'], dtype=torch.long)
         context_len = torch.tensor(sample['context_len'], dtype=torch.long)
         response_len = torch.tensor(sample['response_len'], dtype=torch.long)
         document_len = torch.tensor(sample['document_len'], dtype=torch.long)
@@ -170,9 +164,6 @@ class CMUDoGDataset(Dataset):
         inputs = {'context': context,
                   'response': response,
                   'document': document,
-                  'context_char': context_char,
-                  'response_char': response_char,
-                  'document_char': document_char,
                   'context_len': context_len,
                   'document_len': document_len,
                   'response_len': response_len,
